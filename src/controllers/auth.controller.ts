@@ -102,28 +102,28 @@ export const refreshTokenController = async (refreshToken: string) => {
  * @param {string} code - Authorization code được gửi từ client-side.
  * @returns {Object} - Đối tượng chứa Google OAuth token.
  */
-// const getOauthGooleToken = async (code: string) => {
-//   const body = {
-//     code,
-//     client_id: envConfig.GOOGLE_CLIENT_ID,
-//     client_secret: envConfig.GOOGLE_CLIENT_SECRET,
-//     redirect_uri: envConfig.GOOGLE_AUTHORIZED_REDIRECT_URI,
-//     grant_type: 'authorization_code'
-//   }
-//   const { data } = await axios.post('https://oauth2.googleapis.com/token', body, {
-//     headers: {
-//       'Content-Type': 'application/x-www-form-urlencoded'
-//     }
-//   })
-//   return data as {
-//     access_token: string
-//     expires_in: number
-//     refresh_token: string
-//     scope: string
-//     token_type: string
-//     id_token: string
-//   }
-// }
+const getOauthGooleToken = async (code: string) => {
+  const body = {
+    code,
+    client_id: envConfig.GOOGLE_CLIENT_ID,
+    client_secret: envConfig.GOOGLE_CLIENT_SECRET,
+    redirect_uri: envConfig.GOOGLE_AUTHORIZED_REDIRECT_URI,
+    grant_type: 'authorization_code'
+  }
+  const { data } = await axios.post('https://oauth2.googleapis.com/token', body, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+  })
+  return data as {
+    access_token: string
+    expires_in: number
+    refresh_token: string
+    scope: string
+    token_type: string
+    id_token: string
+  }
+}
 
 /**
  * Hàm này thực hiện gửi yêu cầu lấy thông tin người dùng từ Google dựa trên Google OAuth token.
@@ -153,45 +153,45 @@ const getGoogleUser = async ({ id_token, access_token }: { id_token: string; acc
   }
 }
 
-// export const loginGoogleController = async (code: string) => {
-//   const data = await getOauthGooleToken(code) // Gửi authorization code để lấy Google OAuth token
-//   const { id_token, access_token } = data // Lấy ID token và access token từ kết quả trả về
-//   const googleUser = await getGoogleUser({ id_token, access_token }) // Gửi Google OAuth token để lấy thông tin người dùng từ Google
-//   // Kiểm tra email đã được xác minh từ Google
-//   if (!googleUser.verified_email) {
-//     throw new StatusError({
-//       status: 403,
-//       message: 'Email chưa được xác minh từ Google'
-//     })
-//   }
-//   const account = await prisma.account.findUnique({
-//     where: {
-//       email: googleUser.email
-//     }
-//   })
-//   if (!account) {
-//     throw new StatusError({
-//       status: 403,
-//       message: 'Tài khoản này không tồn tại trên hệ thống website'
-//     })
-//   }
-//   const accessToken = signAccessToken({
-//     userId: account.id,
-//     role: account.role as RoleType
-//   })
-//   const refreshToken = signRefreshToken({
-//     userId: account.id,
-//     role: account.role as RoleType
-//   })
+export const loginGoogleController = async (code: string) => {
+  const data = await getOauthGooleToken(code) // Gửi authorization code để lấy Google OAuth token
+  const { id_token, access_token } = data // Lấy ID token và access token từ kết quả trả về
+  const googleUser = await getGoogleUser({ id_token, access_token }) // Gửi Google OAuth token để lấy thông tin người dùng từ Google
+  // Kiểm tra email đã được xác minh từ Google
+  if (!googleUser.verified_email) {
+    throw new StatusError({
+      status: 403,
+      message: 'Email chưa được xác minh từ Google'
+    })
+  }
+  const account = await prisma.account.findUnique({
+    where: {
+      email: googleUser.email
+    }
+  })
+  if (!account) {
+    throw new StatusError({
+      status: 403,
+      message: 'Tài khoản này không tồn tại trên hệ thống website'
+    })
+  }
+  const accessToken = signAccessToken({
+    userId: account.id,
+    role: account.role as RoleType
+  })
+  const refreshToken = signRefreshToken({
+    userId: account.id,
+    role: account.role as RoleType
+  })
 
-//   return {
-//     accessToken,
-//     refreshToken,
-//     account: {
-//       id: account.id,
-//       name: account.name,
-//       email: account.email,
-//       role: account.role as RoleType
-//     }
-//   }
-// }
+  return {
+    accessToken,
+    refreshToken,
+    account: {
+      id: account.id,
+      name: account.name,
+      email: account.email,
+      role: account.role as RoleType
+    }
+  }
+}
